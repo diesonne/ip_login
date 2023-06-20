@@ -1,0 +1,6 @@
+administer ip login:
+  title: 'Administer IP Login'
+  description: 'Perform administration tasks for IP Login.'
+log in as another user:
+  title: 'Can login as other user'
+  description: 'Allow user to logout and login as another user.'

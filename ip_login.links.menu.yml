@@ -1,0 +1,5 @@
+ip_login.settings:
+  title: 'IP Login'
+  parent: user.admin_index
+  description: 'Configure IP Login settings.'
+  route_name: ip_login.settings

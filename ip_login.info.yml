@@ -1,0 +1,13 @@
+name: 'IP Login'
+type: module
+description: 'Allows users to be automatically logged in in by matching IP address, range or wildcards.'
+core_version_requirement: ^8.9 || ^9
+dependencies:
+  - drupal:user
+  - field_ipaddress:field_ipaddress
+configure: ip_login.settings
+
+# Information added by Drupal.org packaging script on 2020-11-30
+version: '4.0.0-alpha1'
+project: 'ip_login'
+datestamp: 1606733118

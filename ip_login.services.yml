@@ -1,0 +1,5 @@
+services:
+  ip_login.subscriber:
+    class: Drupal\ip_login\EventSubscriber\IpLoginSubscriber
+    tags:
+      - { name: event_subscriber }

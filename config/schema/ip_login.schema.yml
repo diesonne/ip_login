@@ -1,0 +1,12 @@
+# Schema for the configuration files of the IP Login module.
+
+ip_login.settings:
+  type: config_object
+  label: 'IP login settings'
+  mapping:
+    auto_login:
+      type: boolean
+      label: 'Login automatically'
+    form_login:
+      type: boolean
+      label: 'Show link on the user login form'

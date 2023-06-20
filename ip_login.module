@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * @file
+ * Hooks for the IP login module.
+ */
+
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\ip_login\IpLoginController;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function ip_login_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'user') {
+    $fields['ip_login'] = BaseFieldDefinition::create('ipaddress')
+      ->setLabel(t('Login IP Address'))
+      ->setCardinality(1)
+      ->setSettings([
+        'allow_family' => 10,
+        'allow_range' => true,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'ipaddress_default',
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'region' => 'hidden',
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for 'user_login_form'.
+ */
+function ip_login_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Adding the 'ip_login' cache tag even when the module is not configured to
+  // use the 'form' login mode is needed so we can clear all the caches related
+  // to this form (render, page cache, etc.) when the login mode is changed.
+  $form['#cache']['tags'][] = 'ip_login';
+
+  if (!\Drupal::config('ip_login.settings')->get('form_login')) {
+    return;
+  }
+
+  if ($matched_uid = IpLoginController::checkIpLoginExists(\Drupal::request())) {
+    $form['actions']['ip_login'] = [
+      '#type' => 'link',
+      '#title' => t('Log in automatically by IP'),
+      '#url' => Url::fromRoute('ip_login.dologin', [], [
+        'query' => \Drupal::destination()->getAsArray(),
+      ]),
+    ];
+  }
+
+  // The user login form needs to vary by the IP address of the current request
+  // in order to be able to show the 'Log in automatically' link dynamically.
+  $form['#cache']['contexts'][] = 'ip';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update() for the 'user' entity type.
+ */
+function ip_login_user_update(UserInterface $user) {
+  // Invalidate the 'ip_login' cache tag whenever the 'IP Address' field of a
+  // user entity has changed.
+  $field_name = 'ip_login';
+  if (!$user->get($field_name)->equals($user->original->get($field_name))) {
+    \Drupal::service('cache_tags.invalidator')->invalidateTags(['ip_login']);
+  }
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function ip_login_user_login(UserInterface $account) {
+  // When a user logs in, unset all of our cookies to ensure that the user can
+  // be logged-in automatically again. This is done by
+  // \Drupal\ip_login\EventSubscriber\IpLoginSubscriber::onKernelResponse().
+  $request = \Drupal::requestStack()->getMasterRequest();
+  $request->attributes->set('ip_login_user_login', TRUE);
+}
+
+/**
+ * Implements hook_user_logout().
+ */
+function ip_login_user_logout(AccountInterface $account) {
+  $request = \Drupal::requestStack()->getMasterRequest();
+  $request->attributes->set('ip_login_can_login_as_another_user', IpLoginController::canLoginAsAnotherUser($account));
+}

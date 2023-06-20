@@ -1,0 +1,14 @@
+ip_login.dologin:
+  path: '/ip_login/dologin'
+  defaults:
+    _controller: '\Drupal\ip_login\IpLoginController::loginProcess'
+  requirements:
+    _access: 'TRUE'
+
+ip_login.settings:
+  path: '/admin/config/people/ip_login'
+  defaults:
+    _form: '\Drupal\ip_login\Form\IpLoginSettingsForm'
+    _title: 'IP Login'
+  requirements:
+    _permission: 'administer ip login+administer account settings'
