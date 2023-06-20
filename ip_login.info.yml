@@ -1,7 +1,7 @@
 name: 'IP Login'
 type: module
 description: 'Allows users to be automatically logged in in by matching IP address, range or wildcards.'
-core_version_requirement: ^8.9 || ^9
+core_version_requirement: ^8.9 || ^9 || ^10
 dependencies:
   - drupal:user
   - field_ipaddress:field_ipaddress
