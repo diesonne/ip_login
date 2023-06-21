@@ -18,7 +18,7 @@ class IpLoginSubscriber implements EventSubscriberInterface {
    *   The response event.
    */
   public function onKernelResponse(ResponseEvent $event) {
-    if (!$event->isMasterRequest()) {
+    if (!$event->isMainRequest()) {
       return;
     }
 
